@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Червудский свидетель",
+      "hasCanvas": false,
+      "bodyTextLen": 471,
+      "bodyTextHash": "98c694071f261eb7a206459963e64098354138c1c2b096af3a8da007220d57e2",
+      "bodyTextPrefix": "БЕКЛЕНД · 1349 · ЧЕРВУД-БОРО Червудский свидетель Детектив за од",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Червудский свидетель",
+      "hasCanvas": false,
+      "bodyTextLen": 471,
+      "bodyTextHash": "98c694071f261eb7a206459963e64098354138c1c2b096af3a8da007220d57e2",
+      "bodyTextPrefix": "БЕКЛЕНД · 1349 · ЧЕРВУД-БОРО Червудский свидетель Детектив за од",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}

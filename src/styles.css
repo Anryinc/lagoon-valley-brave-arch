@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0c0b0a;
+  --color-surface: #161310;
+  --color-raised: #1e1a16;
+  --color-paper: #d9cbb6;
+  --color-paper-dim: #b7a790;
+  --color-ink: #e8e0d4;
+  --color-muted: #9a8f80;
+  --color-faint: #6e655a;
+  --color-line: #3a342c;
+  --color-night: #7a8b9c;
+  --color-night-dim: #4d5c6a;
+  --color-danger: #a45a4a;
+  --color-brass: #8a7a5c;
+  --font-display: "Cormorant Garamond", "Times New Roman", serif;
+  --font-sans: "Figtree", "Segoe UI", system-ui, sans-serif;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  html,
+  body,
+  #app {
+    min-height: 100%;
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    font-family: var(--font-display);
+  }
+  p {
+    text-wrap: pretty;
+  }
+}
+
+@utility grain {
+  background-image:
+    radial-gradient(circle at 20% 10%, color-mix(in oklab, var(--color-night) 12%, transparent), transparent 42%),
+    radial-gradient(circle at 80% 90%, color-mix(in oklab, var(--color-brass) 8%, transparent), transparent 40%);
+}
+
+@keyframes fog-drift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-6%);
+  }
+}
+
+@keyframes type-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
