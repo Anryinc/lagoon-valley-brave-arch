@@ -3,12 +3,14 @@ import { z } from "zod";
 
 const cache = new Map<string, string>();
 
+/** Live reading for lines the master rewrote. Recorded scenes do not need this. */
 export const speakText = createServerFn({ method: "POST" })
   .validator((input: unknown) =>
-    z.object({ text: z.string().min(1).max(900) }).parse(input),
+    z.object({ text: z.string().min(1).max(4000) }).parse(input),
   )
   .handler(async ({ data }) => {
-    const key = data.text.slice(0, 200);
+    const text = data.text.slice(0, 4000);
+    const key = text.slice(0, 200);
     const hit = cache.get(key);
     if (hit) return { ok: true as const, audioBase64: hit, mime: "audio/mpeg" };
     const apiKey = process.env.XAI_API_KEY;
@@ -20,7 +22,11 @@ export const speakText = createServerFn({ method: "POST" })
           "Content-Type": "application/json",
           Authorization: `Bearer ${apiKey}`,
         },
-        body: JSON.stringify({ text: data.text.slice(0, 900), voice_id: "eve" }),
+        body: JSON.stringify({
+          text,
+          voice_id: "orion",
+          language: "ru",
+        }),
       });
       if (!res.ok) return { ok: false as const, error: `tts ${res.status}` };
       const buf = Buffer.from(await res.arrayBuffer());

@@ -54,26 +54,45 @@ export function StageView({
     null,
   );
   const lastSpoken = useRef("");
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const me = room.myCharacterId ? ROSTER_BY_ID[room.myCharacterId] : null;
 
   useEffect(() => {
-    if (!voiceOn) return;
+    if (!voiceOn) {
+      audioRef.current?.pause();
+      return;
+    }
     if (!room.narration || room.narration === lastSpoken.current) return;
     lastSpoken.current = room.narration;
     let cancelled = false;
     const play = async () => {
-      const res = await speakText({ data: { text: room.narration } });
+      audioRef.current?.pause();
+      const hash = await narrationKey(room.narration);
       if (cancelled) return;
-      if (res.ok) {
-        const audio = new Audio(`data:${res.mime};base64,${res.audioBase64}`);
-        void audio.play().catch(() => fallbackSpeak(room.narration));
+      const file = await fetch(`/voice/${hash}.mp3`).catch(() => null);
+      const type = file?.headers.get("content-type") ?? "";
+      if (file?.ok && type.includes("audio")) {
+        const url = URL.createObjectURL(await file.blob());
+        if (cancelled) {
+          URL.revokeObjectURL(url);
+          return;
+        }
+        const audio = new Audio(url);
+        audioRef.current = audio;
+        audio.onended = () => URL.revokeObjectURL(url);
+        await audio.play().catch(() => undefined);
         return;
       }
-      fallbackSpeak(room.narration);
+      const res = await speakText({ data: { text: room.narration } });
+      if (cancelled || !res.ok) return;
+      const audio = new Audio(`data:${res.mime};base64,${res.audioBase64}`);
+      audioRef.current = audio;
+      await audio.play().catch(() => undefined);
     };
     void play();
     return () => {
       cancelled = true;
+      audioRef.current?.pause();
     };
   }, [room.narration, voiceOn]);
 
@@ -352,11 +371,10 @@ export function StageView({
   );
 }
 
-function fallbackSpeak(text: string) {
-  if (typeof window === "undefined" || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = "ru-RU";
-  u.rate = 0.95;
-  window.speechSynthesis.speak(u);
+async function narrationKey(text: string) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("")
+    .slice(0, 16);
 }
