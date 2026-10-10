@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { StageView } from "@/components/stage-view";
+import { readRememberedProjectId } from "@/lib/game/project-session";
 import { useHostRoom } from "@/lib/game/use-p2p-room";
-import { readRememberedProjectId } from "@/routes/project.$projectId";
 import { useState } from "react";
 import { z } from "zod";
 
@@ -56,8 +56,8 @@ function TablePage() {
         setStartError(r.ok ? null : (r.error ?? "Ошибка"));
       }}
       onCouncil={(on) => host.council(on)}
-      onRegister={(p) => {
-        const r = host.register(p);
+      onRegister={(payload) => {
+        const r = host.register(payload);
         setActionError(r.ok ? null : (r.error ?? "Ошибка"));
       }}
       onClosePuzzle={() => host.dismissPuzzle()}

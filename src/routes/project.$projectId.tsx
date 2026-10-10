@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { rememberProjectId } from "@/lib/game/project-session";
 import { createLocalTableCode } from "@/lib/game/use-p2p-room";
 import { getProject } from "@/projects/registry";
 import { useState } from "react";
@@ -6,19 +7,6 @@ import { useState } from "react";
 export const Route = createFileRoute("/project/$projectId")({
   component: ProjectLanding,
 });
-
-const PROJECT_KEY = "cherwood.activeProjectId";
-
-export function rememberProjectId(projectId: string) {
-  if (typeof sessionStorage !== "undefined") {
-    sessionStorage.setItem(PROJECT_KEY, projectId);
-  }
-}
-
-export function readRememberedProjectId(): string | null {
-  if (typeof sessionStorage === "undefined") return null;
-  return sessionStorage.getItem(PROJECT_KEY);
-}
 
 function ProjectLanding() {
   const { projectId } = Route.useParams();
@@ -136,7 +124,7 @@ function ProjectLanding() {
 
         <p className="mt-6 text-xs leading-relaxed text-faint">
           Хост — ПК или ноутбук: QR и общая доска. С телефона можно сесть как
-          игрок (в том числе с того же стола). Мастерская: сценарий в git.
+          игрок. Мастерская: node-граф сценария.
         </p>
 
         <Link
