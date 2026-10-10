@@ -14,9 +14,8 @@ function StudioIndex() {
         </Link>
         <h1 className="mt-4 font-display text-4xl text-paper">Мастерская</h1>
         <p className="mt-2 text-sm text-muted">
-          Сценарии версионируются в git (`src/projects/&lt;id&gt;/`). Ниже —
-          зарегистрированные пакеты. Node-редактор и commit-flow появятся в P3;
-          сейчас можно открыть карточку и смотреть манифест.
+          Node-based редактор сценария: локации, реплики, ветки, события.
+          Перетаскивание карточек, связи портами, инспектор справа.
         </p>
 
         <ul className="mt-8 space-y-3">
@@ -30,20 +29,14 @@ function StudioIndex() {
                 <div>
                   <p className="font-display text-xl text-paper">{p.title}</p>
                   <p className="text-xs text-faint">
-                    {p.id} · v{p.version} · {p.status}
+                    {p.id} · v{p.version} · graph editor
                   </p>
                 </div>
-                <span className="text-xs text-muted">править →</span>
+                <span className="text-xs text-muted">открыть граф →</span>
               </Link>
             </li>
           ))}
         </ul>
-
-        <p className="mt-8 rounded-[18px] border border-dashed border-line px-4 py-3 text-xs text-faint">
-          Новый сценарий: добавьте папку <code className="text-muted">src/projects/my-id/</code>,
-          опишите <code className="text-muted">manifest</code> + pack, зарегистрируйте в{" "}
-          <code className="text-muted">registry.ts</code>, закоммитьте в git.
-        </p>
       </div>
     </main>
   );
