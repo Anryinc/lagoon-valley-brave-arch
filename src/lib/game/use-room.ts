@@ -1,3 +1,7 @@
+/**
+ * Legacy server-poll room hooks kept for Master Studio / optional fallback.
+ * Table and phone play now use `@/lib/game/use-p2p-room` (host-authoritative).
+ */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import {
