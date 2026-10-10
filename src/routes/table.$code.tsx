@@ -1,13 +1,24 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { StageView } from "@/components/stage-view";
 import { useHostRoom } from "@/lib/game/use-p2p-room";
+import { readRememberedProjectId } from "@/routes/project.$projectId";
 import { useState } from "react";
+import { z } from "zod";
 
-export const Route = createFileRoute("/table/$code")({ component: TablePage });
+const searchSchema = z.object({
+  p: z.string().optional(),
+});
+
+export const Route = createFileRoute("/table/$code")({
+  validateSearch: (s) => searchSchema.parse(s),
+  component: TablePage,
+});
 
 function TablePage() {
   const { code } = Route.useParams();
-  const host = useHostRoom(code);
+  const { p } = Route.useSearch();
+  const projectId = p ?? readRememberedProjectId() ?? "cherwood";
+  const host = useHostRoom(code, projectId);
   const { room, clientId, error } = host;
   const [claimError, setClaimError] = useState<string | null>(null);
   const [startError, setStartError] = useState<string | null>(null);
@@ -19,7 +30,7 @@ function TablePage() {
         <p className="font-display text-3xl text-paper">Стол не найден</p>
         <p className="text-sm text-muted">{error}</p>
         <Link to="/" className="text-sm text-night underline">
-          На первую страницу
+          К проектам
         </Link>
       </main>
     );

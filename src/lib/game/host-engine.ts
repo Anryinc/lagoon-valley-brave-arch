@@ -21,6 +21,7 @@ import type {
   RoomStatus,
   SeatPublic,
 } from "@/lib/campaign/types";
+import { getProject } from "@/projects/registry";
 import { newId } from "./ids";
 
 type Seat = {
@@ -41,14 +42,14 @@ export type AbilityOutcome = {
 export class HostEngine {
   readonly code: string;
   readonly hostClientId: string;
+  readonly projectId: string;
   private pack: CampaignPack;
   private status: RoomStatus = "lobby";
   private council = false;
   private sceneId = "street";
   private locationId = "street";
   private speakerId: string | null = null;
-  private narration =
-    "Стол собирается. Возьмите роли на телефонах. Хост нажмёт «Начать дело».";
+  private narration: string;
   private choices: ChoicePublic[] = [];
   private flags: Record<string, boolean> = {};
   private clues: CluePublic[] = [];
@@ -58,11 +59,14 @@ export class HostEngine {
   private notes = new Map<string, PrivateNote[]>();
   private listeners = new Set<() => void>();
 
-  constructor(code: string, hostClientId: string, pack?: CampaignPack) {
+  constructor(code: string, hostClientId: string, projectId = "cherwood") {
     this.code = code.toUpperCase();
     this.hostClientId = hostClientId;
-    this.pack = pack ?? defaultPack();
-    // Host has a seat so StageView can show roster / claim if desired
+    this.projectId = projectId;
+    const project = getProject(projectId);
+    this.pack = project?.campaign ?? defaultPack();
+    const title = project?.manifest.title ?? "Стол";
+    this.narration = `${title}. Стол собирается. Возьмите роли на телефонах. Хост нажмёт «Начать дело».`;
     this.seats.push({
       clientId: hostClientId,
       displayName: "Хост",
@@ -82,7 +86,6 @@ export class HostEngine {
   ensureSeat(clientId: string, displayName = "Игрок") {
     if (this.seats.some((s) => s.clientId === clientId)) return { ok: true as const };
     if (this.seats.length >= MAX_PARTY + 1) {
-      // +1 host seat allowance; players with roles capped by MAX_PARTY at claim
       return { ok: false as const, error: "Стол заполнен" };
     }
     this.seats.push({ clientId, displayName, characterId: null });

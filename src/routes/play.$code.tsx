@@ -2,8 +2,16 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { PlayerTable } from "@/components/player-table";
 import { useGuestRoom } from "@/lib/game/use-p2p-room";
 import { useState } from "react";
+import { z } from "zod";
 
-export const Route = createFileRoute("/play/$code")({ component: PlayPage });
+const searchSchema = z.object({
+  p: z.string().optional(),
+});
+
+export const Route = createFileRoute("/play/$code")({
+  validateSearch: (s) => searchSchema.parse(s),
+  component: PlayPage,
+});
 
 function PlayPage() {
   const { code } = Route.useParams();
@@ -18,11 +26,11 @@ function PlayPage() {
         <p className="font-display text-3xl text-paper">Стол</p>
         <p className="text-sm text-muted">{error}</p>
         <p className="max-w-sm text-xs text-faint">
-          Код {code.toUpperCase()}. Убедитесь, что на большом экране открыт этот
-          стол и вкладка не ушла в сон.
+          Код {code.toUpperCase()}. Убедитесь, что на ПК/ноутбуке открыт этот стол
+          и вкладка не ушла в сон.
         </p>
         <Link to="/" className="text-sm text-night underline">
-          На первую страницу
+          К проектам
         </Link>
       </main>
     );
