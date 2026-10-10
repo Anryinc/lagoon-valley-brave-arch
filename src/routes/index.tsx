@@ -1,117 +1,82 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { MasterStudio } from "@/components/master-studio";
-import { createLocalTableCode } from "@/lib/game/use-p2p-room";
-import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { listProjects } from "@/projects/registry";
 
-export const Route = createFileRoute("/")({ component: Home });
+export const Route = createFileRoute("/")({ component: HubPage });
 
-function Home() {
-  const [tab, setTab] = useState<"table" | "master">("table");
+function HubPage() {
+  const projects = listProjects();
 
   return (
-    <div className="min-h-dvh bg-bg text-ink">
-      <nav className="relative z-20 flex justify-center gap-2 px-4 pt-4">
-        {(
-          [
-            ["table", "Стол"],
-            ["master", "Мастер"],
-          ] as const
-        ).map(([id, label]) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setTab(id)}
-            className={cn(
-              "h-10 rounded-full border px-4 text-xs uppercase tracking-[0.18em]",
-              tab === id
-                ? "border-paper bg-paper text-bg"
-                : "border-line bg-bg/40 text-muted",
-            )}
-          >
-            {label}
-          </button>
-        ))}
-      </nav>
-      {tab === "master" ? <MasterStudio /> : <TableLanding />}
-    </div>
-  );
-}
-
-function TableLanding() {
-  const navigate = useNavigate();
-  const [code, setCode] = useState("");
-  const [error, setError] = useState<string | null>(null);
-
-  return (
-    <main className="relative min-h-[calc(100dvh-3.5rem)] overflow-hidden">
-      <img
-        src="/art/locations/street.jpg"
-        alt=""
-        className="absolute inset-0 h-full w-full object-cover"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/70 to-bg/30" />
-      <div className="relative mx-auto flex min-h-[calc(100dvh-3.5rem)] max-w-xl flex-col justify-end px-5 pb-10 pt-10">
-        <p className="text-[11px] uppercase tracking-[0.32em] text-brass">
-          Бекленд · 1349 · Червуд-боро
-        </p>
-        <h1 className="mt-3 font-display text-5xl leading-[0.95] text-paper md:text-6xl">
-          Червудский свидетель
-        </h1>
-        <p className="mt-4 max-w-md text-sm leading-relaxed text-muted">
-          Детектив за одним столом в мире Повелителя тайн. Большой экран — хост
-          сцены (состояние в этой вкладке). Телефоны подключаются по WebRTC:
-          роль, способности и то, что нельзя показывать остальным.
-        </p>
-        {error ? <p className="mt-3 text-sm text-danger">{error}</p> : null}
-        <div className="mt-8 flex flex-col gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              setError(null);
-              const next = createLocalTableCode();
-              void navigate({ to: "/table/$code", params: { code: next } });
-            }}
-            className="h-12 rounded-[18px] bg-paper text-sm font-medium text-bg"
-          >
-            Открыть стол на этом экране
-          </button>
-          <form
-            className="flex gap-2"
-            onSubmit={(e) => {
-              e.preventDefault();
-              setError(null);
-              const c = code.trim().toUpperCase();
-              if (c.length < 4) {
-                setError("Введите код стола с большого экрана");
-                return;
-              }
-              void navigate({ to: "/play/$code", params: { code: c } });
-            }}
-          >
-            <input
-              value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
-              placeholder="Код стола"
-              className="h-12 flex-1 rounded-[18px] border border-line bg-bg/70 px-4 font-display text-xl tracking-[0.2em] text-paper placeholder:text-faint"
-              autoCapitalize="characters"
-              autoComplete="off"
-              suppressHydrationWarning
-            />
-            <button
-              type="submit"
-              className="h-12 rounded-[18px] border border-line px-4 text-sm text-paper"
-            >
-              Сесть
-            </button>
-          </form>
+    <main className="min-h-dvh bg-bg text-ink">
+      <header className="mx-auto flex max-w-5xl items-end justify-between gap-4 px-5 pb-2 pt-8">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.32em] text-brass">
+            Стол проектов
+          </p>
+          <h1 className="mt-2 font-display text-4xl text-paper md:text-5xl">
+            Активные сценарии
+          </h1>
+          <p className="mt-2 max-w-lg text-sm text-muted">
+            Выберите дело. Большой экран станет хабом стола; телефоны — ходами и
+            личными находками.
+          </p>
         </div>
-        <p className="mt-6 text-xs leading-relaxed text-faint">
-          Хост открывает стол на ноутбуке или телевизоре — там QR и код. Остальные
-          наводят камеру или вводят код. Пока вкладка хоста открыта, стол жив; БД
-          на конкретном компе не нужна.
-        </p>
-      </div>
+        <Link
+          to="/studio"
+          className="shrink-0 rounded-full border border-line px-4 py-2 text-xs uppercase tracking-[0.18em] text-muted hover:border-paper hover:text-paper"
+        >
+          Мастерская
+        </Link>
+      </header>
+
+      <section className="mx-auto grid max-w-5xl gap-4 px-5 py-8 sm:grid-cols-2">
+        {projects.map((p) => (
+          <Link
+            key={p.id}
+            to="/project/$projectId"
+            params={{ projectId: p.id }}
+            className="group relative overflow-hidden rounded-[22px] border border-line bg-bg/80 transition hover:border-paper/40"
+          >
+            <div className="relative aspect-[16/10] overflow-hidden">
+              <img
+                src={p.coverImage}
+                alt=""
+                className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent" />
+              <span
+                className={`absolute left-3 top-3 rounded-full px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] ${
+                  p.status === "playable"
+                    ? "bg-paper text-bg"
+                    : "border border-line bg-bg/70 text-muted"
+                }`}
+              >
+                {p.status === "playable" ? "можно играть" : "черновик"}
+              </span>
+            </div>
+            <div className="relative -mt-10 space-y-2 px-4 pb-5 pt-2">
+              <h2 className="font-display text-2xl text-paper">{p.title}</h2>
+              {p.subtitle ? (
+                <p className="text-[11px] uppercase tracking-[0.2em] text-brass">
+                  {p.subtitle}
+                </p>
+              ) : null}
+              <p className="text-sm leading-relaxed text-muted">{p.blurb}</p>
+              <p className="text-xs text-faint">
+                {p.playersMin}–{p.playersMax} игрока
+                {p.estimatedMinutes ? ` · ~${p.estimatedMinutes} мин` : ""}
+                {" · "}
+                {p.tags.slice(0, 3).join(" · ")}
+              </p>
+            </div>
+          </Link>
+        ))}
+      </section>
+
+      <footer className="mx-auto max-w-5xl px-5 pb-10 text-xs text-faint">
+        Сценарии хранятся в git (`src/projects/`). Сессия стола живёт во вкладке
+        хоста, пока она открыта.
+      </footer>
     </main>
   );
 }
