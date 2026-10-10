@@ -1,0 +1,14 @@
+{
+  "id": "cherwood",
+  "title": "Червудский свидетель",
+  "subtitle": "Бекленд · 1349 · Червуд-боро",
+  "blurb": "Детектив за одним столом в мире Повелителя тайн. Роли на телефонах, улики и шаги — личные; общий экран только когда кто-то решает показать находку.",
+  "coverImage": "/art/locations/street.jpg",
+  "tags": ["детектив", "лотм", "1 акт"],
+  "playersMin": 1,
+  "playersMax": 4,
+  "estimatedMinutes": 45,
+  "status": "playable",
+  "version": "0.2.0",
+  "entryLocationId": "street"
+}
