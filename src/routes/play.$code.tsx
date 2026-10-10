@@ -1,26 +1,26 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PlayerTable } from "@/components/player-table";
-import { joinTable } from "@/lib/game/api";
-import { useRoom } from "@/lib/game/use-room";
-import { useEffect } from "react";
+import { useGuestRoom } from "@/lib/game/use-p2p-room";
+import { useState } from "react";
 
 export const Route = createFileRoute("/play/$code")({ component: PlayPage });
 
 function PlayPage() {
   const { code } = Route.useParams();
-  const roomHook = useRoom(code);
-  const { room, clientId, error } = roomHook;
+  const guest = useGuestRoom(code);
+  const { room, clientId, error } = guest;
+  const [claimError, setClaimError] = useState<string | null>(null);
+  const [abilityBusy, setAbilityBusy] = useState(false);
 
-  useEffect(() => {
-    if (!clientId || clientId === "ssr") return;
-    void joinTable({ data: { code, clientId } });
-  }, [code, clientId]);
-
-  if (error) {
+  if (error && !room) {
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-bg px-6 text-center">
-        <p className="font-display text-3xl text-paper">Стол не найден</p>
+        <p className="font-display text-3xl text-paper">Стол</p>
         <p className="text-sm text-muted">{error}</p>
+        <p className="max-w-sm text-xs text-faint">
+          Код {code.toUpperCase()}. Убедитесь, что на большом экране открыт этот
+          стол и вкладка не ушла в сон.
+        </p>
         <Link to="/" className="text-sm text-night underline">
           На первую страницу
         </Link>
@@ -29,8 +29,9 @@ function PlayPage() {
   }
   if (!room) {
     return (
-      <main className="flex min-h-dvh items-center justify-center bg-bg font-display text-2xl text-paper">
-        Садимся за стол…
+      <main className="flex min-h-dvh flex-col items-center justify-center gap-2 bg-bg px-6 text-center">
+        <p className="font-display text-2xl text-paper">Садимся за стол…</p>
+        <p className="text-xs text-faint">Ищем хоста по коду {code.toUpperCase()}</p>
       </main>
     );
   }
@@ -39,41 +40,32 @@ function PlayPage() {
     <PlayerTable
       room={room}
       clientId={clientId}
-      onClaim={(id) => roomHook.claim.mutate(id)}
-      onCouncil={(on) => roomHook.council.mutate(on)}
-      onChoose={(id) => roomHook.choose.mutate(id)}
-      onAbility={async (id) => {
-        const res = await roomHook.ability.mutateAsync(id);
-        if (!res.ok) return { ok: false, error: res.error };
-        return {
-          ok: true,
-          visibility: res.visibility,
-          note: res.note,
-        };
+      onClaim={(id) => {
+        guest.claim(id);
+        setClaimError(null);
       }}
-      onSpeak={(text) => roomHook.speak.mutate(text)}
-      onRegister={(p) => roomHook.register.mutate(p)}
-      onClosePuzzle={() => roomHook.dismissPuzzle.mutate()}
-      claimError={
-        roomHook.claim.data && !roomHook.claim.data.ok
-          ? roomHook.claim.data.error
-          : null
-      }
-      actionError={
-        (roomHook.choose.data && !roomHook.choose.data.ok
-          ? roomHook.choose.data.error
-          : null) ||
-        (roomHook.ability.data && !roomHook.ability.data.ok
-          ? roomHook.ability.data.error
-          : null) ||
-        (roomHook.speak.data && !roomHook.speak.data.ok
-          ? roomHook.speak.data.error
-          : null) ||
-        (roomHook.register.data && !roomHook.register.data.ok
-          ? roomHook.register.data.error
-          : null)
-      }
-      abilityBusy={roomHook.ability.isPending}
+      onCouncil={(on) => guest.council(on)}
+      onChoose={(id) => guest.choose(id)}
+      onAbility={async (id) => {
+        setAbilityBusy(true);
+        try {
+          const res = await guest.ability(id);
+          if (!res.ok) return { ok: false, error: res.error };
+          return {
+            ok: true,
+            visibility: res.visibility,
+            note: res.note,
+          };
+        } finally {
+          setAbilityBusy(false);
+        }
+      }}
+      onSpeak={(text) => guest.speak(text)}
+      onRegister={(p) => guest.register(p)}
+      onClosePuzzle={() => guest.dismissPuzzle()}
+      claimError={claimError}
+      actionError={guest.lastActionError}
+      abilityBusy={abilityBusy}
     />
   );
 }

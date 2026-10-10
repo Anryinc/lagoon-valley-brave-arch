@@ -1,13 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { StageView } from "@/components/stage-view";
-import { useRoom } from "@/lib/game/use-room";
+import { useHostRoom } from "@/lib/game/use-p2p-room";
+import { useState } from "react";
 
 export const Route = createFileRoute("/table/$code")({ component: TablePage });
 
 function TablePage() {
   const { code } = Route.useParams();
-  const roomHook = useRoom(code);
-  const { room, clientId, error } = roomHook;
+  const host = useHostRoom(code);
+  const { room, clientId, error } = host;
+  const [claimError, setClaimError] = useState<string | null>(null);
+  const [startError, setStartError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   if (error) {
     return (
@@ -32,14 +36,26 @@ function TablePage() {
     <StageView
       room={room}
       clientId={clientId}
-      onClaim={(id) => roomHook.claim.mutate(id)}
-      onStart={() => roomHook.start.mutate()}
-      onCouncil={(on) => roomHook.council.mutate(on)}
-      onRegister={(p) => roomHook.register.mutate(p)}
-      onClosePuzzle={() => roomHook.dismissPuzzle.mutate()}
-      onChoose={(id) => roomHook.choose.mutate(id)}
+      onClaim={(id) => {
+        const r = host.claim(id);
+        setClaimError(r.ok ? null : (r.error ?? "Ошибка"));
+      }}
+      onStart={() => {
+        const r = host.start();
+        setStartError(r.ok ? null : (r.error ?? "Ошибка"));
+      }}
+      onCouncil={(on) => host.council(on)}
+      onRegister={(p) => {
+        const r = host.register(p);
+        setActionError(r.ok ? null : (r.error ?? "Ошибка"));
+      }}
+      onClosePuzzle={() => host.dismissPuzzle()}
+      onChoose={(id) => {
+        const r = host.choose(id);
+        setActionError(r.ok ? null : (r.error ?? "Ошибка"));
+      }}
       onAbility={async (id) => {
-        const res = await roomHook.ability.mutateAsync(id);
+        const res = host.ability(id);
         if (!res.ok) return { ok: false as const, error: res.error };
         return {
           ok: true as const,
@@ -47,24 +63,9 @@ function TablePage() {
           note: res.note,
         };
       }}
-      claimError={
-        roomHook.claim.data && !roomHook.claim.data.ok
-          ? roomHook.claim.data.error
-          : null
-      }
-      startError={
-        roomHook.start.data && !roomHook.start.data.ok
-          ? roomHook.start.data.error
-          : null
-      }
-      actionError={
-        (roomHook.choose.data && !roomHook.choose.data.ok
-          ? roomHook.choose.data.error
-          : null) ??
-        (roomHook.register.data && !roomHook.register.data.ok
-          ? roomHook.register.data.error
-          : null)
-      }
+      claimError={claimError}
+      startError={startError}
+      actionError={actionError}
     />
   );
 }

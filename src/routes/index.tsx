@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { MasterStudio } from "@/components/master-studio";
-import { useCreateTable, useJoinTable } from "@/lib/game/use-room";
+import { createLocalTableCode } from "@/lib/game/use-p2p-room";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
@@ -40,8 +40,6 @@ function Home() {
 
 function TableLanding() {
   const navigate = useNavigate();
-  const create = useCreateTable();
-  const join = useJoinTable();
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -61,41 +59,34 @@ function TableLanding() {
           Червудский свидетель
         </h1>
         <p className="mt-4 max-w-md text-sm leading-relaxed text-muted">
-          Детектив за одним столом в мире Повелителя тайн. Большой экран — сцена.
-          Телефон — ваша роль, личные способности и то, что нельзя показывать
-          остальным.
+          Детектив за одним столом в мире Повелителя тайн. Большой экран — хост
+          сцены (состояние в этой вкладке). Телефоны подключаются по WebRTC:
+          роль, способности и то, что нельзя показывать остальным.
         </p>
         {error ? <p className="mt-3 text-sm text-danger">{error}</p> : null}
         <div className="mt-8 flex flex-col gap-3">
           <button
             type="button"
-            disabled={create.isPending}
-            onClick={async () => {
+            onClick={() => {
               setError(null);
-              const res = await create.mutateAsync();
-              if (!res.ok) {
-                setError(res.error);
-                return;
-              }
-              void navigate({ to: "/table/$code", params: { code: res.code } });
+              const next = createLocalTableCode();
+              void navigate({ to: "/table/$code", params: { code: next } });
             }}
-            className="h-12 rounded-[18px] bg-paper text-sm font-medium text-bg disabled:opacity-40"
+            className="h-12 rounded-[18px] bg-paper text-sm font-medium text-bg"
           >
             Открыть стол на этом экране
           </button>
           <form
             className="flex gap-2"
-            onSubmit={async (e) => {
+            onSubmit={(e) => {
               e.preventDefault();
               setError(null);
               const c = code.trim().toUpperCase();
-              if (c.length < 4) return;
-              const res = await join.mutateAsync(c);
-              if (!res.ok) {
-                setError(res.error);
+              if (c.length < 4) {
+                setError("Введите код стола с большого экрана");
                 return;
               }
-              void navigate({ to: "/play/$code", params: { code: res.code } });
+              void navigate({ to: "/play/$code", params: { code: c } });
             }}
           >
             <input
@@ -116,9 +107,9 @@ function TableLanding() {
           </form>
         </div>
         <p className="mt-6 text-xs leading-relaxed text-faint">
-          Хост открывает стол на ноутбуке или телевизоре — там сразу появится QR.
-          Остальные наводят камеру и попадают на телефонную страницу. Вкладка
-          «Мастер» — кабинет: сцены, развилки, тупики.
+          Хост открывает стол на ноутбуке или телевизоре — там QR и код. Остальные
+          наводят камеру или вводят код. Пока вкладка хоста открыта, стол жив; БД
+          на конкретном компе не нужна.
         </p>
       </div>
     </main>
