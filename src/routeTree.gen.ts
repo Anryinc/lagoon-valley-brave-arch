@@ -12,6 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlayCodeRouteImport } from './routes/play.$code'
 import { Route as TableCodeRouteImport } from './routes/table.$code'
+import { Route as ProjectProjectIdRouteImport } from './routes/project.$projectId'
+import { Route as StudioIndexRouteImport } from './routes/studio.index'
+import { Route as StudioProjectIdRouteImport } from './routes/studio.$projectId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +31,81 @@ const TableCodeRoute = TableCodeRouteImport.update({
   path: '/table/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectProjectIdRoute = ProjectProjectIdRouteImport.update({
+  id: '/project/$projectId',
+  path: '/project/$projectId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudioIndexRoute = StudioIndexRouteImport.update({
+  id: '/studio/',
+  path: '/studio/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudioProjectIdRoute = StudioProjectIdRouteImport.update({
+  id: '/studio/$projectId',
+  path: '/studio/$projectId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/play/$code': typeof PlayCodeRoute
   '/table/$code': typeof TableCodeRoute
+  '/project/$projectId': typeof ProjectProjectIdRoute
+  '/studio': typeof StudioIndexRoute
+  '/studio/$projectId': typeof StudioProjectIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/play/$code': typeof PlayCodeRoute
   '/table/$code': typeof TableCodeRoute
+  '/project/$projectId': typeof ProjectProjectIdRoute
+  '/studio': typeof StudioIndexRoute
+  '/studio/$projectId': typeof StudioProjectIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/play/$code': typeof PlayCodeRoute
   '/table/$code': typeof TableCodeRoute
+  '/project/$projectId': typeof ProjectProjectIdRoute
+  '/studio/': typeof StudioIndexRoute
+  '/studio/$projectId': typeof StudioProjectIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/play/$code' | '/table/$code'
+  fullPaths:
+    | '/'
+    | '/play/$code'
+    | '/table/$code'
+    | '/project/$projectId'
+    | '/studio'
+    | '/studio/$projectId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/play/$code' | '/table/$code'
-  id: '__root__' | '/' | '/play/$code' | '/table/$code'
+  to:
+    | '/'
+    | '/play/$code'
+    | '/table/$code'
+    | '/project/$projectId'
+    | '/studio'
+    | '/studio/$projectId'
+  id:
+    | '__root__'
+    | '/'
+    | '/play/$code'
+    | '/table/$code'
+    | '/project/$projectId'
+    | '/studio/'
+    | '/studio/$projectId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   PlayCodeRoute: typeof PlayCodeRoute
   TableCodeRoute: typeof TableCodeRoute
+  ProjectProjectIdRoute: typeof ProjectProjectIdRoute
+  StudioIndexRoute: typeof StudioIndexRoute
+  StudioProjectIdRoute: typeof StudioProjectIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +131,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TableCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/project/$projectId': {
+      id: '/project/$projectId'
+      path: '/project/$projectId'
+      fullPath: '/project/$projectId'
+      preLoaderRoute: typeof ProjectProjectIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/studio/': {
+      id: '/studio/'
+      path: '/studio'
+      fullPath: '/studio'
+      preLoaderRoute: typeof StudioIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/studio/$projectId': {
+      id: '/studio/$projectId'
+      path: '/studio/$projectId'
+      fullPath: '/studio/$projectId'
+      preLoaderRoute: typeof StudioProjectIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +159,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   PlayCodeRoute: PlayCodeRoute,
   TableCodeRoute: TableCodeRoute,
+  ProjectProjectIdRoute: ProjectProjectIdRoute,
+  StudioIndexRoute: StudioIndexRoute,
+  StudioProjectIdRoute: StudioProjectIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

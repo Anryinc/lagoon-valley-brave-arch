@@ -3,7 +3,7 @@ import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import appCss from "../styles.css?url";
 
-const APP_NAME = "Червудский свидетель";
+const APP_NAME = "Стол проектов";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -13,7 +13,8 @@ export const Route = createRootRoute({
       { title: APP_NAME },
       {
         name: "description",
-        content: "Детективная кампания за одним столом в мире Повелителя тайн.",
+        content:
+          "Платформа столов: сценарии в git, хаб на ПК, ходы на телефонах.",
       },
       { name: "theme-color", content: "#0c0b0a" },
     ],

@@ -16,11 +16,11 @@ function useClientIdStable() {
 }
 
 /** Host tab: owns HostEngine, fans out personalized snapshots over WebRTC. */
-export function useHostRoom(code: string | undefined) {
+export function useHostRoom(code: string | undefined, projectId = "cherwood") {
   const clientId = useClientIdStable();
   const engineRef = useRef<HostEngine | null>(null);
   const p2pRef = useRef<P2PRoom | null>(null);
-  const peerMapRef = useRef<Map<string, string>>(new Map()); // peerId -> clientId
+  const peerMapRef = useRef<Map<string, string>>(new Map());
   const [room, setRoom] = useState<RoomSnapshot | null>(null);
   const [peers, setPeers] = useState<PeerInfo[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +43,7 @@ export function useHostRoom(code: string | undefined) {
   useEffect(() => {
     if (!code || clientId === "ssr") return;
     const upper = code.toUpperCase();
-    const engine = new HostEngine(upper, clientId);
+    const engine = new HostEngine(upper, clientId, projectId);
     engineRef.current = engine;
     setRoom(engine.snapshotFor(clientId));
 
@@ -79,7 +79,8 @@ export function useHostRoom(code: string | undefined) {
         return;
       }
 
-      const client = "clientId" in msg ? msg.clientId : peerMapRef.current.get(peerId);
+      const client =
+        "clientId" in msg ? msg.clientId : peerMapRef.current.get(peerId);
       if (!client) return;
       peerMapRef.current.set(peerId, client);
 
@@ -155,7 +156,7 @@ export function useHostRoom(code: string | undefined) {
       p2pRef.current = null;
       engineRef.current = null;
     };
-  }, [code, clientId, pushAll]);
+  }, [code, clientId, projectId, pushAll]);
 
   const claim = useCallback(
     (characterId: string | null) => {
@@ -265,7 +266,6 @@ export function useGuestRoom(code: string | undefined) {
     const p2p = p2pRef.current;
     const host = hostPeerRef.current;
     if (!p2p || !host) {
-      // Host peer not known yet — broadcast; host will accept
       p2p?.send(msg);
       return;
     }
@@ -282,7 +282,6 @@ export function useGuestRoom(code: string | undefined) {
       selfId: clientId,
       name: "guest",
       onPeersChanged: (list) => {
-        // Prefer a connected peer; any peer in room is the host mesh
         const connected = list.find((p) => p.connectionState === "connected");
         if (connected) hostPeerRef.current = connected.id;
         else if (list[0]) hostPeerRef.current = list[0].id;
@@ -320,15 +319,14 @@ export function useGuestRoom(code: string | undefined) {
     p2pRef.current = p2p;
     void p2p.join().then(() => {
       if (cancelled) return;
-      // Retry hello once mesh may have formed
       setTimeout(() => {
         if (!cancelled) send({ t: "hello", clientId, displayName: "Игрок" });
       }, 800);
     });
 
     const hangTimer = setTimeout(() => {
-      if (!cancelled && !room) {
-        setError((e) => e ?? "Ждём хоста… Откройте стол на большом экране с тем же кодом.");
+      if (!cancelled) {
+        setError((e) => e ?? "Ждём хоста… Откройте стол на ПК с тем же кодом.");
       }
     }, 12_000);
 
@@ -338,7 +336,6 @@ export function useGuestRoom(code: string | undefined) {
       p2p.close();
       p2pRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code, clientId, send]);
 
   const claim = useCallback(
